@@ -1,0 +1,6 @@
+WITH DATA AS
+( SELECT 'word1, word2, word3, word4, word5, word6' str FROM dual
+)
+SELECT trim(regexp_substr(str, '[^,]+', 1, LEVEL)) str
+FROM DATA
+CONNECT BY regexp_substr(str , '[^,]+', 1, LEVEL) IS NOT NULL;

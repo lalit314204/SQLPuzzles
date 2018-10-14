@@ -1,0 +1,109 @@
+CREATE TABLE WIN
+( YEAR INT,
+WIN CHAR(3));
+
+
+
+INSERT INTO WIN VALUES (2001,'IND');
+
+INSERT INTO WIN VALUES (2002,'AUS');
+
+INSERT INTO WIN VALUES (2003,'AUS');
+
+INSERT INTO WIN VALUES (2004,'AUS');
+
+INSERT INTO WIN VALUES (2005,'WI');
+
+INSERT INTO WIN VALUES (2006,'IND');
+
+INSERT INTO WIN VALUES (2007,'IND');
+
+INSERT INTO WIN VALUES (2008,'SRI');
+
+INSERT INTO WIN VALUES (2009,'SRI');
+
+INSERT INTO WIN VALUES (2010,'SRI');
+
+INSERT INTO WIN VALUES (2011,'PAK');
+
+
+
+
+WITH A AS 
+(select WIN, count(*) CNT
+ from (select WIN,YEAR,(row_number() over (order by YEAR) -
+ row_number() over (partition by WIN order by YEAR)
+) as grp from WIN
+) t
+
+group by grp, WIN)
+SELECT WIN,CNT FROM A WHERE CNT = (SELECT MAX(CNT) FROM A);
+
+
+
+select WIN,YEAR,row_number() over (order by YEAR),
+row_number() over (partition by WIN order by YEAR),
+row_number() over (order by YEAR) -
+ row_number() over (partition by WIN order by YEAR)
+ from WIN;
+
+
+
+-------------------------
+
+
+WITH A AS
+
+(select 'TeamA' team ,to_date('1-JAN-2012') matchdate ,'W' WL from dual UNION ALL
+ select 'TeamA', to_date('2-JAN-2012'),'W' WL from dual UNION ALL 
+select 'TeamA', to_date('3-JAN-2012'),'W' WL from dual UNION ALL 
+select 'TeamB', to_date('4-JAN-2012'),'W' WL from dual UNION ALL 
+select 'TeamB', to_date('5-JAN-2012'),'W' WL from dual UNION ALL 
+select 'TeamB', to_date('6-JAN-2012'),'W' WL from dual UNION ALL
+ select 'TeamA', to_date('7-JAN-2012'),'L' WL from dual UNION ALL 
+select 'TeamA', to_date('8-JAN-2012'),'W' WL from dual UNION ALL 
+select 'TeamA', to_date('10-JAN-2012'),'W' WL from dual
+)
+,
+B AS
+
+(
+SELECT
+  TEAM
+  ,COUNT( TEAM) OVER (PARTITION BY TEAM ORDER BY MATCHDATE) CNT
+  ,WL
+  ,
+CASE WHEN WL = 'W' THEN 0 ELSE COUNT( TEAM) OVER (PARTITION BY TEAM ORDER BY MATCHDATE) END L
+  ,MATCHDATE
+FROM
+  A
+)
+,
+C AS
+
+(SELECT
+  TEAM
+  ,CNT - MAX(L) OVER (PARTITION BY TEAM ORDER BY MATCHDATE) ST
+FROM
+  B
+)
+,
+D AS
+(SELECT
+  TEAM
+  ,ST
+  ,MAX(ST) OVER (PARTITION BY 1) LST
+FROM
+  C
+)
+
+SELECT
+  TEAM
+  ,LST
+
+FROM
+  D 
+WHERE
+  ST = LST
+
+----------------------------------

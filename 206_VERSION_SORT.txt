@@ -1,0 +1,28 @@
+CREATE TABLE VER
+(
+PROD CHAR(1),
+VER CHAR(10)
+);
+
+INSERT INTO VER VALUES ('A','1.1');
+INSERT INTO VER VALUES ('A','1.1.1');
+INSERT INTO VER VALUES ('A','1.2.10');
+INSERT INTO VER VALUES ('A','1.5');
+INSERT INTO VER VALUES ('A','1.10.1');
+INSERT INTO VER VALUES ('B','2.1.1');
+INSERT INTO VER VALUES ('B','2.1');
+INSERT INTO VER VALUES ('A','1.4');
+INSERT INTO VER VALUES ('A','1.2.4');
+INSERT INTO VER VALUES ('A','1.2.5');
+
+
+select VER 
+from VER
+order by substr(TRIM(VER), 1, instr(TRIM(VER),'.')-1) desc
+        ,length(substr(TRIM(VER), instr(TRIM(VER),'.')+1)) desc
+        ,substr(TRIM(VER), instr(TRIM(VER),'.')+1) desc,
+        substr(TRIM(VER), instr(TRIM(VER),'.',-1,1)+1) desc;
+
+SELECT VER,substr(TRIM(VER), 1, instr(TRIM(VER),'.')-1),length(substr(TRIM(VER), instr(TRIM(VER),'.')+1)),substr(TRIM(VER), instr(TRIM(VER),'.')+1) FROM VER;
+
+SELECT VER,substr(TRIM(VER), 1, instr(TRIM(VER),'.')-1),length(substr(TRIM(VER), instr(TRIM(VER),'.')+1)),substr(TRIM(VER), instr(TRIM(VER),'.',-1,1)+1) FROM VER;

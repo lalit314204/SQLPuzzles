@@ -1,0 +1,108 @@
+with original_data as (
+  select 37  match_id, 'Team1' team_id, 'N' won_id from dual union all
+  select 67  match_id, 'Team1' team_id, 'Y' won_id from dual union all
+  select 98  match_id, 'Team1' team_id, 'N' won_id from dual union all
+  select 109 match_id, 'Team1' team_id, 'N' won_id from dual union all
+  select 158 match_id, 'Team1' team_id, 'Y' won_id from dual union all
+  select 162 match_id, 'Team1' team_id, 'Y' won_id from dual union all
+  select 177 match_id, 'Team1' team_id, 'Y' won_id from dual union all
+  select 188 match_id, 'Team1' team_id, 'Y' won_id from dual union all
+  select 198 match_id, 'Team1' team_id, 'N' won_id from dual union all
+  select 207 match_id, 'Team1' team_id, 'Y' won_id from dual union all
+  select 217 match_id, 'Team1' team_id, 'Y' won_id from dual union all
+  select 10  match_id, 'Team2' team_id, 'N' won_id from dual union all
+  select 13  match_id, 'Team2' team_id, 'N' won_id from dual union all
+  select 24  match_id, 'Team2' team_id, 'N' won_id from dual union all
+  select 39  match_id, 'Team2' team_id, 'Y' won_id from dual union all
+  select 40  match_id, 'Team2' team_id, 'Y' won_id from dual union all
+  select 51  match_id, 'Team2' team_id, 'Y' won_id from dual union all
+  select 64  match_id, 'Team2' team_id, 'N' won_id from dual union all
+  select 79  match_id, 'Team2' team_id, 'N' won_id from dual union all
+  select 86  match_id, 'Team2' team_id, 'N' won_id from dual union all
+  select 91  match_id, 'Team2' team_id, 'Y' won_id from dual union all
+  select 101 match_id, 'Team2' team_id, 'N' won_id from dual 
+),
+----------------------------------------------------------------------
+new_streaks as (
+--
+--  Identifying new streaks.
+--  ------------------------
+--
+    select
+      match_id,
+      team_id,
+      won_id,
+--
+--  A new streak is identfied if 
+--
+    case when
+--
+--    a) won_id = 'Y' and
+--
+      won_id = 'Y' and
+--
+--    b) the previous won_id = 'N':
+--    
+      lag(won_id) over (partition by team_id order by match_id) = 'N' 
+--
+--    
+      then 1 
+--
+--    All other cases: no new streak:
+      else 0 
+-- 
+     end new_streak
+    from
+      original_data
+),
+-------------------------------
+streak_no as (
+--
+--  Assigning a unique number to each streak.
+--  -----------------------------------------
+--
+select
+--
+    match_id,
+    team_id,
+--
+--  In order to be able to count the number of records
+--  of a streak, we first need to assign a unique number
+--  to each streak:
+--
+    sum(new_streak) over (partition by team_id order by match_id) streak_no
+--
+from
+    new_streaks 
+where
+--  We're only interested in «winning streaks»:
+    won_id = 'Y'
+),
+-----------------------------------------------
+--
+--  Counting the elements per streak
+--  --------------------------------
+--
+records_per_streak as (
+select 
+  count(*) counter,
+  team_id,
+  streak_no
+from
+  streak_no
+group by
+  team_id,
+  streak_no
+)
+------------------------------------------------
+--
+--   Finally: we can find the «longest streak»
+--   per team:
+--
+select
+  max(counter) longest_streak,
+  team_id
+from
+  records_per_streak 
+group by team_id
+;

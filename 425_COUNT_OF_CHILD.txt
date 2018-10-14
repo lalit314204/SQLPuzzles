@@ -1,0 +1,22 @@
+CREATE TABLE CHILDCNT
+(
+ID INT,
+PID INT
+);
+
+INSERT INTO CHILDCNT VALUES (1,NULL);
+INSERT INTO CHILDCNT VALUES (2,1);
+INSERT INTO CHILDCNT VALUES (3,1);
+INSERT INTO CHILDCNT VALUES (4,2);
+INSERT INTO CHILDCNT VALUES (5,3);
+INSERT INTO CHILDCNT VALUES (10,3);
+INSERT INTO CHILDCNT VALUES (6,3);
+INSERT INTO CHILDCNT VALUES (7,4);
+INSERT INTO CHILDCNT VALUES (8,7);
+INSERT INTO CHILDCNT VALUES (9,7);
+
+select id, (select count(*) from CHILDCNT b connect by prior id=pid start with b.pid =a.id ) number_subnodes
+from CHILDCNT a
+connect by prior id=pid
+start with pid is null
+order siblings by id;
